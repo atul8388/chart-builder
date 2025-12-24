@@ -631,6 +631,8 @@ export class PolarsRowpadService {
   /**
    * Apply filters to DataFrame
    * Note: Treats null values as 0 for numeric comparisons
+   * Supports: equals, notEquals, greaterThan, lessThan, greaterThanOrEqual, lessThanOrEqual,
+   *           contains, notContains, in, notIn, isNull, isNotNull, isEmpty, isNotEmpty, between
    */
   private applyFilters(
     df: pl.DataFrame,
@@ -678,6 +680,67 @@ export class PolarsRowpadService {
             filteredDf = filteredDf.filter(
               pl.col(column).fillNull(0).ltEq(filter.value),
             );
+            break;
+          case 'contains':
+            // String contains filter
+            filteredDf = filteredDf.filter(
+              pl.col(column).cast(pl.Utf8).str.contains(filter.value),
+            );
+            break;
+          case 'notContains':
+            // String does not contain filter
+            filteredDf = filteredDf.filter(
+              pl.col(column).cast(pl.Utf8).str.contains(filter.value).not(),
+            );
+            break;
+          case 'in':
+            // Value in list filter
+            filteredDf = filteredDf.filter(pl.col(column).isIn(filter.value));
+            break;
+          case 'notIn':
+            // Value not in list filter
+            filteredDf = filteredDf.filter(
+              pl.col(column).isIn(filter.value).not(),
+            );
+            break;
+          case 'isNull':
+            // Check if value is null
+            filteredDf = filteredDf.filter(pl.col(column).isNull());
+            break;
+          case 'isNotNull':
+            // Check if value is NOT null (display non-null data)
+            filteredDf = filteredDf.filter(pl.col(column).isNotNull());
+            break;
+          case 'isEmpty':
+            // Check if string is empty ("") - includes null values
+            filteredDf = filteredDf.filter(
+              pl
+                .col(column)
+                .isNull()
+                .or(pl.col(column).cast(pl.Utf8).str.lengths().eq(0)),
+            );
+            break;
+          case 'isNotEmpty':
+            // Check if string is NOT empty ("") - excludes null values
+            filteredDf = filteredDf.filter(
+              pl
+                .col(column)
+                .isNotNull()
+                .and(pl.col(column).cast(pl.Utf8).str.lengths().gt(0)),
+            );
+            break;
+          case 'between':
+            // Value between range filter
+            if (Array.isArray(filter.value) && filter.value.length === 2) {
+              const [min, max] = filter.value;
+              filteredDf = filteredDf.filter(
+                pl
+                  .col(column)
+                  .fillNull(0)
+                  .gtEq(min)
+                  .and(pl.col(column).fillNull(0).ltEq(max)),
+              );
+            }
             break;
         }
       } catch (error) {
@@ -783,6 +846,14 @@ export class PolarsRowpadService {
           case 'countDistinct':
             aggExprs.push(pl.col(metric.field).nUnique().alias(alias));
             break;
+          case 'first':
+            // Get the first value (useful for scalar fields repeated across rows)
+            aggExprs.push(pl.col(metric.field).first().alias(alias));
+            break;
+          case 'last':
+            // Get the last value (useful for scalar fields repeated across rows)
+            aggExprs.push(pl.col(metric.field).last().alias(alias));
+            break;
         }
       }
 
@@ -849,6 +920,14 @@ export class PolarsRowpadService {
             break;
           case 'countDistinct':
             aggExprs.push(pl.col(metric.field).nUnique().alias(alias));
+            break;
+          case 'first':
+            // Get the first value (useful for scalar fields repeated across rows)
+            aggExprs.push(pl.col(metric.field).first().alias(alias));
+            break;
+          case 'last':
+            // Get the last value (useful for scalar fields repeated across rows)
+            aggExprs.push(pl.col(metric.field).last().alias(alias));
             break;
         }
       }

@@ -23,7 +23,7 @@ This is designed to work like **Power BI, Tableau, or Looker** - allowing you to
 ✅ **Sorting** - Sort results by any field  
 ✅ **Limiting** - Get top N results  
 ✅ **Date Range Filtering** - Filter by date ranges  
-✅ **Multi-dimensional Analysis** - Group by multiple dimensions  
+✅ **Multi-dimensional Analysis** - Group by multiple dimensions
 
 ---
 
@@ -31,8 +31,12 @@ This is designed to work like **Power BI, Tableau, or Looker** - allowing you to
 
 ```json
 {
-  "data": { /* Your JSON data */ },
-  "template": { /* Optional: field type definitions */ },
+  "data": {
+    /* Your JSON data */
+  },
+  "template": {
+    /* Optional: field type definitions */
+  },
   "dimensions": ["field1", "field2"],
   "metrics": [
     {
@@ -67,36 +71,38 @@ This is designed to work like **Power BI, Tableau, or Looker** - allowing you to
 
 ## Aggregation Functions
 
-| Function | Description | Example Use Case |
-|----------|-------------|------------------|
-| `sum` | Sum of all values | Total revenue, total quantity |
-| `avg` | Average of all values | Average order value, average rating |
-| `count` | Count of rows | Number of orders, number of customers |
-| `min` | Minimum value | Lowest price, earliest date |
-| `max` | Maximum value | Highest price, latest date |
-| `median` | Median value | Median income, median age |
-| `std` | Standard deviation | Price variance, score distribution |
-| `countDistinct` | Count unique values | Unique customers, unique products |
+| Function        | Description           | Example Use Case                              |
+| --------------- | --------------------- | --------------------------------------------- |
+| `sum`           | Sum of all values     | Total revenue, total quantity                 |
+| `avg`           | Average of all values | Average order value, average rating           |
+| `count`         | Count of rows         | Number of orders, number of customers         |
+| `min`           | Minimum value         | Lowest price, earliest date                   |
+| `max`           | Maximum value         | Highest price, latest date                    |
+| `median`        | Median value          | Median income, median age                     |
+| `std`           | Standard deviation    | Price variance, score distribution            |
+| `countDistinct` | Count unique values   | Unique customers, unique products             |
+| `first`         | Get first value       | Get scalar field value (repeated across rows) |
+| `last`          | Get last value        | Get scalar field value (repeated across rows) |
 
 ---
 
 ## Filter Operators
 
-| Operator | Description | Example |
-|----------|-------------|---------|
-| `equals` | Exact match | `status = "active"` |
-| `notEquals` | Not equal | `status != "cancelled"` |
-| `greaterThan` | Greater than | `price > 100` |
-| `lessThan` | Less than | `quantity < 10` |
-| `greaterThanOrEqual` | Greater than or equal | `age >= 18` |
-| `lessThanOrEqual` | Less than or equal | `discount <= 50` |
-| `contains` | String contains | `name contains "John"` |
-| `notContains` | String does not contain | `email not contains "spam"` |
-| `in` | Value in list | `region in ["North", "South"]` |
-| `notIn` | Value not in list | `status not in ["cancelled", "refunded"]` |
-| `isNull` | Value is null | `discount is null` |
-| `isNotNull` | Value is not null | `email is not null` |
-| `between` | Value between range | `price between [100, 500]` |
+| Operator             | Description             | Example                                   |
+| -------------------- | ----------------------- | ----------------------------------------- |
+| `equals`             | Exact match             | `status = "active"`                       |
+| `notEquals`          | Not equal               | `status != "cancelled"`                   |
+| `greaterThan`        | Greater than            | `price > 100`                             |
+| `lessThan`           | Less than               | `quantity < 10`                           |
+| `greaterThanOrEqual` | Greater than or equal   | `age >= 18`                               |
+| `lessThanOrEqual`    | Less than or equal      | `discount <= 50`                          |
+| `contains`           | String contains         | `name contains "John"`                    |
+| `notContains`        | String does not contain | `email not contains "spam"`               |
+| `in`                 | Value in list           | `region in ["North", "South"]`            |
+| `notIn`              | Value not in list       | `status not in ["cancelled", "refunded"]` |
+| `isNull`             | Value is null           | `discount is null`                        |
+| `isNotNull`          | Value is not null       | `email is not null`                       |
+| `between`            | Value between range     | `price between [100, 500]`                |
 
 ---
 
@@ -124,6 +130,7 @@ This is designed to work like **Power BI, Tableau, or Looker** - allowing you to
 ```
 
 **Result:**
+
 ```json
 [
   { "sales_region": "North", "total_sales": 15000 },
@@ -201,6 +208,7 @@ This is designed to work like **Power BI, Tableau, or Looker** - allowing you to
 ```
 
 **Result:**
+
 ```json
 [
   { "sales_region": "North", "sales_category": "Electronics", "revenue": 8000 },
@@ -239,6 +247,7 @@ This is designed to work like **Power BI, Tableau, or Looker** - allowing you to
 ```
 
 **Result:**
+
 ```json
 [
   {
@@ -250,5 +259,3 @@ This is designed to work like **Power BI, Tableau, or Looker** - allowing you to
 ```
 
 ---
-
-

@@ -12,7 +12,9 @@ POST /processor/chart-query
 
 ```json
 {
-  "data": { /* Your JSON data */ },
+  "data": {
+    /* Your JSON data */
+  },
   "dimensions": ["field1", "field2"],
   "metrics": [
     {
@@ -42,55 +44,56 @@ POST /processor/chart-query
 
 ## 📊 Aggregation Functions
 
-| Function | Description |
-|----------|-------------|
-| `sum` | Sum of values |
-| `avg` | Average |
-| `count` | Count rows |
-| `min` | Minimum value |
-| `max` | Maximum value |
-| `median` | Median value |
-| `std` | Standard deviation |
-| `countDistinct` | Count unique values |
+| Function        | Description         | Use Case                                      |
+| --------------- | ------------------- | --------------------------------------------- |
+| `sum`           | Sum of values       | Total revenue, total quantity                 |
+| `avg`           | Average             | Average price, average rating                 |
+| `count`         | Count rows          | Number of records                             |
+| `min`           | Minimum value       | Lowest price, earliest date                   |
+| `max`           | Maximum value       | Highest price, latest date                    |
+| `median`        | Median value        | Median income, median age                     |
+| `std`           | Standard deviation  | Price variance, score distribution            |
+| `countDistinct` | Count unique values | Unique customers, unique products             |
+| `first`         | First value         | Get scalar field value (repeated across rows) |
+| `last`          | Last value          | Get scalar field value (repeated across rows) |
 
 ---
 
 ## 🔍 Filter Operators
 
-| Operator | Example |
-|----------|---------|
-| `equals` | `"status" = "active"` |
-| `notEquals` | `"status" != "cancelled"` |
-| `greaterThan` | `"price" > 100` |
-| `lessThan` | `"quantity" < 10` |
-| `greaterThanOrEqual` | `"age" >= 18` |
-| `lessThanOrEqual` | `"discount" <= 50` |
+| Operator             | Example                   |
+| -------------------- | ------------------------- |
+| `equals`             | `"status" = "active"`     |
+| `notEquals`          | `"status" != "cancelled"` |
+| `greaterThan`        | `"price" > 100`           |
+| `lessThan`           | `"quantity" < 10`         |
+| `greaterThanOrEqual` | `"age" >= 18`             |
+| `lessThanOrEqual`    | `"discount" <= 50`        |
 
 ---
 
 ## 📈 Common Patterns
 
 ### Bar Chart - Group by One Dimension
+
 ```json
 {
   "dimensions": ["region"],
-  "metrics": [
-    { "field": "amount", "aggregation": "sum", "alias": "revenue" }
-  ]
+  "metrics": [{ "field": "amount", "aggregation": "sum", "alias": "revenue" }]
 }
 ```
 
 ### Stacked Bar - Group by Two Dimensions
+
 ```json
 {
   "dimensions": ["region", "category"],
-  "metrics": [
-    { "field": "amount", "aggregation": "sum", "alias": "revenue" }
-  ]
+  "metrics": [{ "field": "amount", "aggregation": "sum", "alias": "revenue" }]
 }
 ```
 
 ### KPI Card - No Grouping
+
 ```json
 {
   "metrics": [
@@ -101,24 +104,22 @@ POST /processor/chart-query
 ```
 
 ### Top 10 - With Limit
+
 ```json
 {
   "dimensions": ["product"],
-  "metrics": [
-    { "field": "amount", "aggregation": "sum", "alias": "revenue" }
-  ],
+  "metrics": [{ "field": "amount", "aggregation": "sum", "alias": "revenue" }],
   "sort": [{ "field": "revenue", "direction": "desc" }],
   "limit": 10
 }
 ```
 
 ### Filtered Chart
+
 ```json
 {
   "dimensions": ["region"],
-  "metrics": [
-    { "field": "amount", "aggregation": "sum", "alias": "revenue" }
-  ],
+  "metrics": [{ "field": "amount", "aggregation": "sum", "alias": "revenue" }],
   "filters": [
     { "field": "category", "operator": "equals", "value": "Electronics" }
   ]
@@ -151,16 +152,16 @@ POST /processor/chart-query
 
 ## 🎯 Chart Type Mapping
 
-| Chart Type | Dimensions | Metrics | Sort | Limit |
-|------------|------------|---------|------|-------|
-| **Bar Chart** | 1 | 1+ | Optional | No |
-| **Line Chart** | 1 (time) | 1+ | By time ASC | No |
-| **Pie Chart** | 1 | 1 | Optional | Optional |
-| **Stacked Bar** | 2 | 1+ | Optional | No |
-| **Scatter Plot** | 0 | 2 | No | Optional |
-| **KPI Card** | 0 | 1+ | No | No |
-| **Top N** | 1 | 1+ | By metric DESC | Yes |
-| **Heatmap** | 2 | 1 | Optional | No |
+| Chart Type       | Dimensions | Metrics | Sort           | Limit    |
+| ---------------- | ---------- | ------- | -------------- | -------- |
+| **Bar Chart**    | 1          | 1+      | Optional       | No       |
+| **Line Chart**   | 1 (time)   | 1+      | By time ASC    | No       |
+| **Pie Chart**    | 1          | 1       | Optional       | Optional |
+| **Stacked Bar**  | 2          | 1+      | Optional       | No       |
+| **Scatter Plot** | 0          | 2       | No             | Optional |
+| **KPI Card**     | 0          | 1+      | No             | No       |
+| **Top N**        | 1          | 1+      | By metric DESC | Yes      |
+| **Heatmap**      | 2          | 1       | Optional       | No       |
 
 ---
 
@@ -184,20 +185,20 @@ const response = await fetch('/processor/chart-query', {
   body: JSON.stringify({
     data: myData,
     dimensions: ['region'],
-    metrics: [
-      { field: 'amount', aggregation: 'sum', alias: 'revenue' }
-    ]
-  })
+    metrics: [{ field: 'amount', aggregation: 'sum', alias: 'revenue' }],
+  }),
 });
 
 const result = await response.json();
 
 // Use with Chart.js
 const chartData = {
-  labels: result.data.map(row => row.region),
-  datasets: [{
-    data: result.data.map(row => row.revenue)
-  }]
+  labels: result.data.map((row) => row.region),
+  datasets: [
+    {
+      data: result.data.map((row) => row.revenue),
+    },
+  ],
 };
 ```
 
@@ -213,4 +214,3 @@ const chartData = {
 ---
 
 **Happy Charting!** 📊
-

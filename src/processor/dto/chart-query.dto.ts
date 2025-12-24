@@ -54,9 +54,21 @@ export class MetricDefinition {
   field: string;
 
   /**
-   * Aggregation function: sum, avg, count, min, max, median, std
+   * Aggregation function: sum, avg, count, min, max, median, std, countDistinct, first, last
+   * - first: Get the first value (useful for scalar fields repeated across rows)
+   * - last: Get the last value (useful for scalar fields repeated across rows)
    */
-  aggregation: 'sum' | 'avg' | 'count' | 'min' | 'max' | 'median' | 'std' | 'countDistinct';
+  aggregation:
+    | 'sum'
+    | 'avg'
+    | 'count'
+    | 'min'
+    | 'max'
+    | 'median'
+    | 'std'
+    | 'countDistinct'
+    | 'first'
+    | 'last';
 
   /**
    * Optional alias for the result column
@@ -73,7 +85,22 @@ export class FilterDefinition {
   /**
    * Filter operator
    */
-  operator: 'equals' | 'notEquals' | 'greaterThan' | 'lessThan' | 'greaterThanOrEqual' | 'lessThanOrEqual' | 'contains' | 'notContains' | 'in' | 'notIn' | 'isNull' | 'isNotNull' | 'between';
+  operator:
+    | 'equals'
+    | 'notEquals'
+    | 'greaterThan'
+    | 'lessThan'
+    | 'greaterThanOrEqual'
+    | 'lessThanOrEqual'
+    | 'contains'
+    | 'notContains'
+    | 'in'
+    | 'notIn'
+    | 'isNull'
+    | 'isNotNull'
+    | 'isEmpty'
+    | 'isNotEmpty'
+    | 'between';
 
   /**
    * Value to compare against (can be single value or array for 'in', 'notIn', 'between')
@@ -164,4 +191,3 @@ export class ChartQueryResponseDto {
    */
   error?: string;
 }
-
