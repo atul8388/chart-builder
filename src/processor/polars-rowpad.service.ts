@@ -143,15 +143,18 @@ export class PolarsRowpadService {
     const fieldTypes = new Map<string, string>();
 
     // Check if template has groups structure (new format)
-    if (template && Array.isArray(template.groups)) {
+    if (template.content && Array.isArray(template.content.groups)) {
       // console.log('Template - Using groups structure');
 
-      template.groups.forEach((group: any, groupIndex: number) => {
+      template.content.groups.forEach((group: any, groupIndex: number) => {
         if (Array.isArray(group.items)) {
           group.items.forEach((item: any, itemIndex: number) => {
             if (item.properties) {
               let fieldType: string;
               const fieldKey = item.properties.key;
+              if (item.properties.type === 'DropDown') {
+                fieldType = 'text';
+              }
               if (item.properties.dateoptiontype) {
                 fieldType = item.properties.dateoptiontype;
               } else {
@@ -243,8 +246,10 @@ export class PolarsRowpadService {
         fieldType = fieldTypes.get(baseName);
       }
 
-      // If field is not in template, skip it
+      // If field is not in template, include it anyway (flattened object fields)
+      // This ensures nested object fields like form_section_answer are preserved
       if (!fieldType) {
+        filtered[key] = value;
         continue;
       }
 
@@ -300,7 +305,7 @@ export class PolarsRowpadService {
     try {
       // First, flatten the data normally
       const flattenedRows = await this.flattenWithRowPadding(jsonDoc);
-      // console.log('Template - Flattened rows:', flattenedRows);
+      console.log('Template - Flattened rows:', flattenedRows);
       if (flattenedRows.length === 0) {
         return [];
       }
@@ -338,8 +343,11 @@ export class PolarsRowpadService {
           fieldType = fieldTypes.get(baseName);
         }
 
-        // If field is not in template, skip it
+        // If field is not in template, include it anyway (flattened object fields)
+        // This ensures nested object fields like form_section_answer are preserved
         if (!fieldType) {
+          // Always include columns that are not in template (they're flattened object fields)
+          columnsToSelect.push(column);
           continue;
         }
 
