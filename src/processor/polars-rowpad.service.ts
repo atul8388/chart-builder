@@ -32,21 +32,34 @@ export class PolarsRowpadService {
         }
       }
 
-      // Flatten nested objects
-      const flattenedObjects: Record<string, any> = {};
+      // Separate object fields into those with numeric suffixes and regular nested objects
+      const objectFieldsWithNumericSuffixes: Record<string, any> = {};
+      const flattenedRegularObjects: Record<string, any> = {};
+
       for (const [objKey, objValue] of Object.entries(objectFields)) {
-        if (objValue && typeof objValue === 'object') {
-          for (const [nestedKey, nestedValue] of Object.entries(objValue)) {
-            flattenedObjects[`${objKey}_${nestedKey}`] = nestedValue;
+        // Check if this object field has a numeric suffix (e.g., equipment-1, item_2)
+        const hasNumericSuffix = /[-_]\d+$/.test(objKey);
+
+        if (hasNumericSuffix) {
+          // Keep objects with numeric suffixes for detectAndGroupNumericSuffixes
+          objectFieldsWithNumericSuffixes[objKey] = objValue;
+        } else {
+          // Flatten regular nested objects (without numeric suffixes)
+          if (objValue && typeof objValue === 'object') {
+            for (const [nestedKey, nestedValue] of Object.entries(objValue)) {
+              flattenedRegularObjects[`${objKey}_${nestedKey}`] = nestedValue;
+            }
           }
         }
       }
 
       // Detect and group properties with numeric suffixes (e.g., down_type-1, down_type-2)
+      // Pass scalar fields, objects with numeric suffixes, and flattened regular objects
       const { groupedArrays, remainingFields } =
         this.detectAndGroupNumericSuffixes({
           ...scalarFields,
-          ...flattenedObjects,
+          ...objectFieldsWithNumericSuffixes,
+          ...flattenedRegularObjects,
         });
 
       // Merge grouped arrays with existing array fields
@@ -305,7 +318,7 @@ export class PolarsRowpadService {
     try {
       // First, flatten the data normally
       const flattenedRows = await this.flattenWithRowPadding(jsonDoc);
-      console.log('Template - Flattened rows:', flattenedRows);
+      // console.log('Template - Flattened rows:', flattenedRows);
       if (flattenedRows.length === 0) {
         return [];
       }
@@ -411,8 +424,13 @@ export class PolarsRowpadService {
    *
    * Pattern: propertyName-1, propertyName-2, propertyName-3, etc.
    *
-   * @param fields - Object containing all flattened fields
-   * @returns Object with groupedArrays and remainingFields
+   * Handles two types of fields:
+   * 1. Primitive fields (strings, numbers, etc.) - Creates a single array
+   * 2. Object fields - Flattens each object's properties as separate arrays
+   *    (e.g., item-1: {name: "A"}, item-2: {name: "B"} → item_name: ["A", "B"])
+   *
+   * @param fields - Object containing scalar fields and object fields (with numeric suffixes)
+   * @returns Object with groupedArrays (flattened arrays) and remainingFields (non-grouped fields)
    */
   private detectAndGroupNumericSuffixes(fields: Record<string, any>): {
     groupedArrays: Record<string, any[]>;
@@ -454,12 +472,48 @@ export class PolarsRowpadService {
         // Sort by index to ensure correct order
         items.sort((a, b) => a.index - b.index);
 
-        // Create array from grouped items
-        groupedArrays[baseName] = items.map((item) => item.value);
+        // Check if the values are objects (not arrays, not null)
+        const firstValue = items[0].value;
+        const isObjectField =
+          firstValue !== null &&
+          typeof firstValue === 'object' &&
+          !Array.isArray(firstValue);
 
-        // console.log(
-        //   `Polars - Grouped ${items.length} properties into array: ${baseName}`,
-        // );
+        if (isObjectField) {
+          // If values are objects, flatten each object's properties as separate fields
+          const objectKeys = Object.keys(firstValue);
+          console.log(
+            `Polars - Found object field: ${baseName} with keys: ${objectKeys.join(
+              ', ',
+            )}`,
+          );
+          for (const objKey of objectKeys) {
+            const flattenedFieldName = `${baseName}_${objKey}`;
+            const flattenedArray = items.map((item) => {
+              const obj = item.value;
+              if (
+                obj !== null &&
+                typeof obj === 'object' &&
+                !Array.isArray(obj)
+              ) {
+                return obj[objKey] ?? null;
+              }
+              return null;
+            });
+            groupedArrays[flattenedFieldName] = flattenedArray;
+          }
+
+          // console.log(
+          //   `Polars - Flattened object properties from ${baseName} into separate fields`,
+          // );
+        } else {
+          // If values are primitives, create array from grouped items
+          groupedArrays[baseName] = items.map((item) => item.value);
+
+          // console.log(
+          //   `Polars - Grouped ${items.length} properties into array: ${baseName}`,
+          // );
+        }
       } else {
         // If only one item, treat it as a regular field
         const item = items[0];
